@@ -23,9 +23,8 @@ export class WebSocketService {
     const ws = new SockJS(this.webSocketEndPoint);
     this.stompClient = Stomp.over(ws);
     const thiz = this;
-    console.log('token --->>> ' + localStorage.getItem('access_token'));
     thiz.stompClient.connect({'X-Authorization': 'Bearer ' + localStorage.getItem('access_token')},
-      (frame) => {
+      () => {
         thiz.stompClient.subscribe(thiz.topic, (sdkEvent) => {
             console.log(sdkEvent);
             thiz.onMessageReceived(sdkEvent);

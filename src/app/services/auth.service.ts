@@ -17,15 +17,9 @@ export class AuthService {
   constructor(private router: Router,
               private httpClient: HttpClient) {}
 
-  static saveToken(token) {
-    const expireDate = new Date().getTime() + (1000 * token.expires_in);
-    localStorage.setItem('access_token', token);
-    // localStorage.setItem('tokenExpireDate', expireDate.toString());
-    console.log('Obtained Access token');
-  }
-
   registerUser(authData: AuthData) {
-    this.httpClient.post(this.baseUrl + '/signup', authData).subscribe(user => {
+    this.httpClient.post(this.baseUrl + '/signup', authData)
+      .subscribe(user => {
       //this.uiService.isLoadingChanged.next(false);
       // this.uiService.openSnackBar('Register successfully, please Login', null, 5000);
       //this.uiService.isLoginChanged.next(true);
@@ -35,21 +29,24 @@ export class AuthService {
     });
   }
 
-  getToken(authData: AuthData) {
+  login(authData: AuthData) {
+    this.getToken(authData);
+  }
+
+  private getToken(authData: AuthData) {
 
     this.httpClient.post(this.baseUrl + '/login', authData, {observe: 'response'})
       .subscribe(resp => {
         const token = resp.headers.get('token');
-        AuthService.saveToken(token);
+        const exp = resp.headers.get('expiration');
+        localStorage.setItem('access_token', token);
+        localStorage.setItem('expiration_token', exp);
+        console.log('Obtained Access token');
         // this.authSuccessfully();
       }, err => {
         // this.uiService.openSnackBar('Invalid username or password', null, 5000);
         // this.uiService.isLoadingChanged.next(false);
       });
-  }
-
-  login(authData: AuthData) {
-    this.getToken(authData);
   }
 
   logout() {
@@ -62,7 +59,7 @@ export class AuthService {
     return this.isAuthenticated;
   }
 
-  authSuccessfully() {
+  private authSuccessfully() {
     // this.uiService.isLoadingChanged.next(false);
     this.isAuthenticated = true;
     // this.uiService.isShowBudgetSelectChanged.next(true);
